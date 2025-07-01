@@ -31,7 +31,7 @@ def panel_plot(df):
         annotation_text="Treatment Start",
         annotation_position="top right"
     )
-    fig.show()
+    return fig
 
 def means_plot(model_results):
     coeffs = model_results.params
@@ -79,4 +79,4 @@ def means_plot(model_results):
         legend_title_text='Color',
         template='plotly_white'
     )
-    fig.show() 
+    return fig 
