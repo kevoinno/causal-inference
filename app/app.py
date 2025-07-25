@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import sys
 import os
 
@@ -10,7 +11,11 @@ from estimate.estimate import estimate_did
 from visualize.visualize import panel_plot, means_plot
 import numpy as np
 
-st.title("Difference-in-Difference Simulation Tool")
+
+# Make page wide mode
+st.set_page_config(layout = "wide")
+
+st.title("Difference-in-Difference Simulation Tool 📈")
 
 # Sidebar controls
 st.sidebar.header("Simulation Parameters")
@@ -23,13 +28,21 @@ control_trend = st.sidebar.slider("Control Trend", min_value=0, max_value=10, va
 noise = st.sidebar.slider("Noise", min_value=0, max_value=20, value=3)
 sample_size = st.sidebar.slider("Sample Size", min_value=10, max_value=2000, value=500, step=10)
 
-# maybe use caching for generating plots
+# Graph plots according to the parameters
+df = simulate(b0_treat = treated_baseline, b0_control = control_baseline, 
+                     b1_treat = treated_trend, b1_control = control_trend,
+                     treatment_effect = true_effect,
+                     noise = noise,
+                     N = sample_size)
+
+# Preview data in a dataframe + download data button
+st.markdown("**Preview of the data**") 
+st.dataframe(df.head(5))
+df_csv = df.to_csv()
+st.download_button("Download Data", data = df_csv, file_name = "simulated_did_data.csv")
 
 # Visualize the data (in 2 cols)
 col1, col2 = st.columns(2)
-
-# Graph plots according to the parameters
-df = simulate(true_effect, treated_baseline, treated_trend, control_baseline, control_trend, noise, sample_size)
 
 # Display the panel plot
 with col1:
@@ -46,11 +59,7 @@ with col2:
 
 st.write(model_results.summary())
 
-# TODO: 
-# 1. show some rows of the data. Add a download data option
-# 2. Find a good range for the sliders
-# 3. Add writeup information 
-    # - explain raw data graph
-    # - explain means plot
-    # - explain regression results
-# 4. Look at ways to defend parallel trends assumption
+# # TODO: 
+#  - Clarify simulated data columns
+#  - Label Regression results
+#  - Add another page with an in depth guide

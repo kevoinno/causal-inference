@@ -1,11 +1,12 @@
 import plotly.express as px
 import plotly.graph_objects as go
 
+# function that plots simulated panel data
 def panel_plot(df):
     df_plot = df.copy()
-
     df_plot['treat'] = df_plot['treat'].apply(lambda x : 'Treated' if x == 1 else 'Control')
 
+    # create scatterplot
     fig = px.scatter(
         df_plot,
         x='time_period',
@@ -18,19 +19,24 @@ def panel_plot(df):
             "outcome": "Outcome",
             "treat": "Group"
         },
-        color_discrete_map={
+        color_discrete_map={ # Optional: set custom colors
             'Treated': 'red',
             'Control': 'blue'
         },
         template='plotly_white'
     )
+
+    # Add the vertical line for when the treatment occurs
     fig.add_vline(
-        x=4,
+        x=0.5,
         line_dash="dash",
         line_color="black",
         annotation_text="Treatment Start",
         annotation_position="top right"
     )
+
+    fig.update_xaxes(tickvals = [-3, -2, -1, 0, 1])
+
     return fig
 
 def means_plot(model_results):
