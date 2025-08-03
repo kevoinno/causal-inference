@@ -12,7 +12,7 @@ def panel_plot(df):
         x='time_period',
         y='outcome',
         color='treat',  
-        title="Simulated Difference-in-Differences Data",
+        title="Outcomes over Time by Group",
         opacity = 0.4,
         labels={
             "time_period": "Time Period",
@@ -78,11 +78,25 @@ def means_plot(model_results):
         name='Treated (Counterfactual)',
         showlegend=True
     ))
+
+    # Add the vertical line for when the treatment occurs
+    fig.add_vline(
+        x=0.5,
+        line_dash="dash",
+        line_color="black",
+        annotation_text="Treatment Start",
+        annotation_position="top right"
+    )
+    
     fig.update_layout(
         title="Difference-in-Difference Regression Visualized",
-        xaxis_title="Time Period (Pre-treatment vs Post-treatment)",
+        xaxis_title="Time Period",
         yaxis_title="Outcome",
         legend_title_text='Color',
         template='plotly_white'
     )
+
+    fig.update_xaxes(tickvals = [0, 1])
+
     return fig 
+
