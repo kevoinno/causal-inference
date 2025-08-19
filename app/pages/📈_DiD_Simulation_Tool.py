@@ -59,17 +59,28 @@ with col1:
                                       help="The trend that the outcome of the control group follows over time")
             sample_size = st.slider("Sample Size", min_value=10, max_value=2000, value=500, step=10,
                                     help="The number of observations in each group")
+        
+        # New parameter for realistic treatment assignment
+        treat_ratio = st.slider("Treatment Group Size (%)", min_value=10, max_value=90, value=30, step=5,
+                                help="Percentage of units in the treatment group (realistic DiD often has uneven groups)")
 
 # Simulate data
 df = simulate(b0_treat=treated_baseline, b0_control=control_baseline,
              b1_treat=treated_trend, b1_control=control_trend,
              treatment_effect=true_effect,
              noise=noise,
-             N=sample_size)
+             N=sample_size,
+             treat_ratio=treat_ratio/100)  # Convert percentage to decimal
 
 # Data preview section
 with st.container(border=True):
     st.header("📊 Data Preview")
+    
+    # Show group sizes for educational purposes
+    n_treated = int(sample_size * treat_ratio / 100)
+    n_control = sample_size - n_treated
+    st.markdown(f"📈 **Group Sizes**: {n_treated} treated units ({treat_ratio}%) | {n_control} control units ({100-treat_ratio}%)")
+    
     st.dataframe(df.head(5))
     df_csv = df.to_csv()
     st.download_button("Download Data", data=df_csv, file_name="simulated_did_data.csv", type="primary")

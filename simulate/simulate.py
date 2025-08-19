@@ -3,14 +3,18 @@ import pandas as pd
 
 # function that simulates panel data
 # N = number of people we are observing over time
-def simulate(b0_treat = 10, b0_control = 40, b1_treat = 4, b1_control = 4, treatment_effect = 8, noise = 3, N = 500, R = 100):
+def simulate(b0_treat = 10, b0_control = 40, b1_treat = 4, b1_control = 4, treatment_effect = 8, noise = 3, N = 500, treat_ratio = 0.3):
     # simulate data
 
-    # units and treatment assignment
+    # units and treatment assignment with realistic proportions
     units = np.arange(N)
-    treat = np.repeat([0, 1], np.floor(N/2)) 
+    n_treated = int(N * treat_ratio)  # e.g., 30% treated
+    n_control = N - n_treated         # e.g., 70% control
+    
+    treat = np.concatenate([np.ones(n_treated), np.zeros(n_control)])
     np.random.shuffle(treat)
 
+    # Currently, treatment status to units is randomly assigned
     df = pd.DataFrame({
         'unit' : units,
         'treat' : treat
@@ -24,8 +28,21 @@ def simulate(b0_treat = 10, b0_control = 40, b1_treat = 4, b1_control = 4, treat
 
     # add outcomes
 
-    # baseline outcomes
+    # Add unit-level baseline heterogeneity
+    unit_baseline_effects = np.random.normal(0, 2, N)  # Individual baseline differences
+    
+    # Create unit-level effects dataframe
+    unit_effects = pd.DataFrame({
+        'unit': units,
+        'unit_baseline_effect': unit_baseline_effects
+    })
+    
+    # Merge unit effects with main dataframe
+    df = df.merge(unit_effects, on='unit')
+
+    # baseline outcomes with unit heterogeneity
     df['outcome'] = df['treat'].apply(lambda x : b0_treat if x == 1 else b0_control) 
+    df['outcome'] = df['outcome'] + df['unit_baseline_effect']  # Add individual baseline variation
 
     # apply trends
     treat_mask = df['treat'] == 1 
