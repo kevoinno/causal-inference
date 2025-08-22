@@ -5,6 +5,7 @@ import pandas as pd
 # N = number of people we are observing over time
 def simulate(b0_treat = 10, b0_control = 40, b1_treat = 4, b1_control = 4, treatment_effect = 8, noise = 3, N = 500, treat_ratio = 0.3):
     # simulate data
+    np.random.seed(1) # for reproducibility
 
     # units and treatment assignment with realistic proportions
     units = np.arange(N)
@@ -51,10 +52,25 @@ def simulate(b0_treat = 10, b0_control = 40, b1_treat = 4, b1_control = 4, treat
     df.loc[treat_mask, 'outcome'] += df.loc[treat_mask, 'time_period'] * b1_treat
     df.loc[control_mask, 'outcome'] += df.loc[control_mask, 'time_period'] * b1_control
 
+    # Add time-varying confounders (affect all units equally)
+    time_effects = np.random.normal(0, 2.5, 5)  # One effect per time period (-3, -2, -1, 0, 1)
+    
+    # Create time effects dataframe
+    time_effects_df = pd.DataFrame({
+        'time_period': [-3, -2, -1, 0, 1],
+        'time_effect': time_effects
+    })
+    
+    # Merge time effects with main dataframe
+    df = df.merge(time_effects_df, on='time_period')
+    
+    # Apply time-varying confounders to all units
+    df['outcome'] = df['outcome'] + df['time_effect']
+
     # apply treatment effect
     df['outcome'] = df['outcome'] + treatment_effect * df['treat'] * df['time_indicator']
 
     # add noise
     df['outcome'] = df['outcome'] + np.random.normal(0, noise, 5*N)
 
-    return df        
+    return df

@@ -39,6 +39,49 @@ def panel_plot(df):
 
     return fig
 
+def mean_outcomes_plot(df):
+    """
+    Creates a line plot of mean outcomes over time by group.
+    This replaces the raw data scatter plot with a cleaner visualization
+    that shows the core DiD patterns more clearly.
+    """
+    # Compute mean outcomes by group and time period
+    mean_df = (
+        df.groupby(["treat", "time_period"])['outcome']
+          .mean()
+          .reset_index()
+    )
+    mean_df['Group'] = mean_df['treat'].map({1: 'Treated', 0: 'Control'})
+    
+    # Create line plot with markers
+    fig = px.line(
+        mean_df,
+        x="time_period",
+        y="outcome",
+        color="Group",
+        markers=True,
+        labels={"time_period": "Time Period", "outcome": "Mean Outcome"},
+        template="plotly_white",
+        title="Mean Outcomes Over Time by Group",
+        color_discrete_map={
+            'Treated': 'red',
+            'Control': 'blue'
+        }
+    )
+    
+    # Add the vertical line for when the treatment occurs
+    fig.add_vline(
+        x=0.5,
+        line_dash="dash",
+        line_color="black",
+        annotation_text="Treatment Start",
+        annotation_position="top right"
+    )
+    
+    fig.update_xaxes(tickvals=[-3, -2, -1, 0, 1])
+    
+    return fig
+
 def means_plot(model_results):
     coeffs = model_results.params
 
@@ -99,4 +142,62 @@ def means_plot(model_results):
     fig.update_xaxes(tickvals = [0, 1])
 
     return fig 
+
+def bias_visualization(model_results, true_effect):
+    """
+    Creates a visualization showing the estimated effect vs true effect,
+    including confidence intervals and bias assessment.
+    """
+    # Extract the treatment effect estimate and confidence interval
+    estimated_effect = model_results.params['treat:time_indicator']
+    ci_lower = model_results.conf_int().loc['treat:time_indicator', 0]
+    ci_upper = model_results.conf_int().loc['treat:time_indicator', 1]
+    
+    # Calculate bias
+    bias = estimated_effect - true_effect
+    
+    # Create the visualization
+    fig = go.Figure()
+    
+    # Add true effect line
+    fig.add_hline(
+        y=true_effect,
+        line_dash="dash",
+        line_color="green",
+        annotation_text=f"True Effect: {true_effect:.2f}",
+        annotation_position="top right"
+    )
+    
+    # Add estimated effect point
+    fig.add_trace(go.Scatter(
+        x=[0],
+        y=[estimated_effect],
+        mode='markers',
+        marker=dict(size=12, color='red'),
+        name=f'Estimated Effect: {estimated_effect:.2f}',
+        showlegend=True
+    ))
+    
+    # Add confidence interval as a filled area
+    fig.add_trace(go.Scatter(
+        x=[0, 0],
+        y=[ci_lower, ci_upper],
+        mode='lines',
+        line=dict(color='red', width=3),
+        fill='tonexty',
+        fillcolor='rgba(255, 0, 0, 0.2)',
+        name=f'95% CI: [{ci_lower:.2f}, {ci_upper:.2f}]',
+        showlegend=True
+    ))
+    
+    fig.update_layout(
+        title="Estimated vs True Treatment Effect",
+        xaxis_title="",
+        yaxis_title="Treatment Effect",
+        template='plotly_white',
+        xaxis=dict(showticklabels=False, range=[-0.5, 0.5]),
+        height=400
+    )
+    
+    return fig, bias, estimated_effect, ci_lower, ci_upper 
 

@@ -1,6 +1,6 @@
 import statsmodels.formula.api as smf
 
-# Estimate the ATT
+# Estimate the ATT using (2x2 DiD setup)
 def estimate_did(df):
     filtered_df = df[df['time_period'].isin([0, 1])].copy()
     model = smf.ols('outcome~treat*time_indicator', data = filtered_df)
@@ -8,13 +8,12 @@ def estimate_did(df):
     
     return results
 
-# Run a placebo test that regresses the outcome on the treatment, time_period and their interaction
+# Runs a placebo test (2x2 DiD setup) on time periods -1, 0
 def placebo_test(df):
-    # Filter to pre-treatment data
-    pre_treatment_df = df[df['time_period'] <= 0].copy()
+    filtered_df = df[df['time_period'].isin([-1, 0])].copy()
+    filtered_df['time_indicator'] = filtered_df['time_period'].apply(lambda x : 1 if x == 0 else 0)
 
-    # Fit model
-    model = smf.ols('outcome~treat*time_period', data = pre_treatment_df)
+    model = smf.ols('outcome~treat*time_indicator', data = filtered_df)
     results = model.fit(cov_type = 'HC2')
 
     return results
