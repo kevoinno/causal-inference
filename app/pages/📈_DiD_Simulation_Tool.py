@@ -40,7 +40,8 @@ col1, col2 = st.columns([0.4, 0.6])
 with col1:
     with st.container(border=True):
         st.header("⚙️ Simulation Parameters")
-        st.caption("Play around with the sliders and see how the graphs change.")
+        st.caption("Play around with the sliders and see how the graphs and estimates change")
+        st.caption("e.g. Try making the group trends different and check the estimate!")
 
         true_effect = st.slider("True Effect", min_value=-50, max_value=50, value=8, 
                                 help="Size of the causal effect of the treatment")
@@ -58,7 +59,7 @@ with col1:
                                          help="Baseline outcome of the control group at time t = 0")
             control_trend = st.slider("Control Trend", min_value=0, max_value=10, value=4,
                                       help="The trend that the outcome of the control group follows over time")
-            sample_size = st.slider("Sample Size", min_value=10, max_value=2000, value=500, step=10,
+            sample_size = st.slider("Sample Size", min_value=10, max_value=2000, value=200, step=10,
                                     help="The total number of units in the study")
         
         # New parameter for realistic treatment assignment
@@ -103,7 +104,7 @@ with col2:
             # Display the mean outcomes plot (replaces raw data plot)
             fig_mean = mean_outcomes_plot(df)
             st.plotly_chart(fig_mean, use_container_width=True)
-            st.caption("💡 **Note**: This shows group means over time. Real data would display individual variation around these lines due to unit-specific factors and measurement noise.")
+            st.caption("💡 **Note**: This shows group means over time. The raw data would vary around these points due to individual variation and noise.")
         
         with col2_inner_viz:
             # Display the means plot
@@ -149,6 +150,7 @@ with st.container(border=True):
     
     # Bias visualization below both columns
     st.subheader("📈 Bias Visualization")
+    st.caption("Tells us how far the model's estimated causal effect was from the true effect")
     st.plotly_chart(bias_fig, use_container_width=True)
 
 # Placebo test
@@ -194,4 +196,4 @@ with st.container(border=True):
             st.warning("⚠️ **Implication**: This suggests the DiD estimate may be biased due to pre-existing differences in trends between groups.")
         else:
             st.success("✅ **Assessment**: No evidence of pre-treatment divergence - parallel trends assumption appears reasonable.")
-            st.info("💡 **Implication**: This supports the validity of the DiD design, but does not completely validate the assumptions.")
+            st.info("💡 **Implication**: This makes the assumptions of the DiD design more reasonable, but does not completely validate the assumptions.")
