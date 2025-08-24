@@ -34,7 +34,7 @@ st.write("""The difference-in-difference design might be a good candidate for yo
          parameters.""")
 
 # Simulation parameters and visualizations side by side
-col1, col2 = st.columns([0.4, 0.6])
+col1, col2 = st.columns([0.35, 0.65])
 
 # Left column: Simulation parameters
 with col1:

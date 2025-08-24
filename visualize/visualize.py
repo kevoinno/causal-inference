@@ -78,7 +78,17 @@ def mean_outcomes_plot(df):
         annotation_position="top right"
     )
     
-    fig.update_xaxes(tickvals=[-3, -2, -1, 0, 1])
+    # Add explicit height and fix x-axis label rotation
+    fig.update_layout(
+        height=400,
+        margin=dict(l=50, r=50, t=80, b=50)
+    )
+    
+    # Force horizontal x-axis labels
+    fig.update_xaxes(
+        tickvals=[-3, -2, -1, 0, 1],
+        tickangle=0
+    )
     
     return fig
 
@@ -131,17 +141,24 @@ def means_plot(model_results):
         annotation_position="top right"
     )
     
+    # Fix 1: Add explicit height and better margins
     fig.update_layout(
         title="Difference-in-Difference Regression Visualized",
         xaxis_title="Time Period",
         yaxis_title="Outcome",
         legend_title_text='Color',
-        template='plotly_white'
+        template='plotly_white',
+        height=400,
+        margin=dict(l=50, r=50, t=80, b=50)
     )
 
-    fig.update_xaxes(tickvals = [0, 1])
+    # Fix 2: Force horizontal x-axis labels
+    fig.update_xaxes(
+        tickvals=[0, 1],
+        tickangle=0
+    )
 
-    return fig 
+    return fig
 
 def bias_visualization(model_results, true_effect):
     """
