@@ -143,7 +143,7 @@ def means_plot(model_results):
     
     # Fix 1: Add explicit height and better margins
     fig.update_layout(
-        title="Difference-in-Difference Regression Visualized",
+        title="DiD Regression Visualized",
         xaxis_title="Time Period",
         yaxis_title="Outcome",
         legend_title_text='Color',
