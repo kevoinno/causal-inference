@@ -69,19 +69,28 @@ def mean_outcomes_plot(df):
         }
     )
     
-    # Add the vertical line for when the treatment occurs
+    # Add the vertical line for when the treatment occurs (without annotation text)
     fig.add_vline(
         x=0.5,
         line_dash="dash",
-        line_color="black",
-        annotation_text="Treatment Start",
-        annotation_position="top right"
+        line_color="black"
     )
+    
+    # Add a dummy trace for treatment start in legend
+    fig.add_trace(go.Scatter(
+        x=[None, None],
+        y=[None, None],
+        mode='lines',
+        line=dict(color='black', width=2, dash='dash'),
+        name='Treatment Start',
+        showlegend=True,
+        hoverinfo='skip'
+    ))
     
     # Add explicit height and fix x-axis label rotation
     fig.update_layout(
         height=400,
-        margin=dict(l=50, r=50, t=80, b=50)
+        margin=dict(l=50, r=50, t=100, b=50)
     )
     
     # Force horizontal x-axis labels
@@ -132,24 +141,33 @@ def means_plot(model_results):
         showlegend=True
     ))
 
-    # Add the vertical line for when the treatment occurs
+    # Add the vertical line for when the treatment occurs (without annotation text)
     fig.add_vline(
         x=0.5,
         line_dash="dash",
-        line_color="black",
-        annotation_text="Treatment Start",
-        annotation_position="top right"
+        line_color="black"
     )
+    
+    # Add a dummy trace for treatment start in legend
+    fig.add_trace(go.Scatter(
+        x=[None, None],
+        y=[None, None],
+        mode='lines',
+        line=dict(color='black', width=2, dash='dash'),
+        name='Treatment Start',
+        showlegend=True,
+        hoverinfo='skip'
+    ))
     
     # Fix 1: Add explicit height and better margins
     fig.update_layout(
-        title="DiD Regression Visualized",
+        title="DiD Regression Visualization",
         xaxis_title="Time Period",
         yaxis_title="Outcome",
-        legend_title_text='Color',
+        legend_title_text='',
         template='plotly_white',
         height=400,
-        margin=dict(l=50, r=50, t=80, b=50)
+        margin=dict(l=50, r=50, t=100, b=50)
     )
 
     # Fix 2: Force horizontal x-axis labels
