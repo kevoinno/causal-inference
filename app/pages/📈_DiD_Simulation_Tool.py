@@ -29,9 +29,10 @@ st.sidebar.header("DiD Simulation Tool")
 st.write("""Have you ever wanted to measure the impact of a policy or marketing campaign, but for some reason you couldn't run a 
          traditional A/B test or randomized experiment? Or maybe you already launched the policy and need to understand the effects 
          using observational data.""")
-st.write("""The difference-in-difference design might be a good candidate for you to measure the impact of this policy. Let's learn more
-         about this design. If you are already familiar with this method, feel free to skip over and start messing around with the simulation 
-         parameters.""")
+st.write("""The difference-in-difference design might be a good candidate for you to measure the impact of this policy. If this method is completely new to you, check out the DiD guide tab before using this tool. 
+         If you are already familiar with this method, feel free to skip over and start messing around with the simulation parameters.""")
+st.markdown("""There are 5 time periods ranging from -3 to 1. If a time period is negative or zero, then it is a pre-treatment period. 
+            Time period $t = 0$ marks the pre-treatment period used in the 2x2 DiD setup and $t = 1$ marks the post-treatment period.""")
 
 # Simulation parameters and visualizations side by side
 col1, col2 = st.columns([0.3, 0.7])
@@ -135,10 +136,7 @@ with st.container(border=True):
         st.markdown(f"""
         **Estimated Causal Effect**: {estimated_effect:.2f} units
         
-        **95% Confidence Interval**: [{ci_lower:.2f}, {ci_upper:.2f}] 
-        {'✅ Statistically significant' if is_significant else '❌ Not statistically significant'} (p = {p_value:.3f})
-        
-        **Bias**: The estimate is {abs(bias):.2f} units {'above' if bias > 0 else 'below'} the true effect of {true_effect:.2f} units.
+        **95% Confidence Interval**: [{ci_lower:.2f}, {ci_upper:.2f}]
         """)
         
         # Add confidence interval coverage info
@@ -147,6 +145,20 @@ with st.container(border=True):
             st.success("✅ **Confidence Interval**: Contains the true effect")
         else:
             st.error("❌ **Confidence Interval**: Does not contain the true effect")
+        
+        # Add statistical significance interpretation
+        st.markdown(f"""
+        **Statistical Significance** (p = {p_value:.3f}):
+        """)
+        
+        if is_significant:
+            st.success("✅ **P-value Interpretation**: The estimated effect is statistically significantly different from 0")
+        else:
+            st.warning("❌ **P-value Interpretation**: We don't have enough evidence to say that the estimated effect is significantly different from 0")
+        
+        st.markdown(f"""
+        **Bias**: The estimate is {abs(bias):.2f} units {'above' if bias > 0 else 'below'} the true effect of {true_effect:.2f} units.
+        """)
     
     # Bias visualization below both columns
     st.subheader("📈 Bias Visualization")
@@ -159,9 +171,12 @@ with st.container(border=True):
     st.caption("Pre-treatment falsification test")
     
     st.write("""
-    **What this test does**: We run a 2x2 DiD using time periods -1 and 0 (before treatment) to test the parallel trends assumption.
+    This is a falsification test for the parallel trends. We run a 2x2 DiD using time periods -1 and 0 (before treatment) to test the parallel trends assumption.
     
-    **What to look for**: If parallel trends hold, the interaction term (`treat:time_indicator`) should be close to zero and statistically insignificant.
+    If parallel trends hold, the interaction term (`treat:time_indicator`) should be close to zero and statistically insignificant. If the interaction term is non-zero and statistically significant, then we have evidence that the trends between the two groups were different and not parallel.
+             
+    This test has limitations. The argument that the groups were similar before treatment so they should be similar after is flawed.
+    There are many other methods to falsify this assumption. This one was used for simplicity.
     """)
     
     placebo_results = placebo_test(df)
@@ -192,8 +207,8 @@ with st.container(border=True):
         
         # Assessment based on statistical significance
         if placebo_significant:
-            st.error("❌ **Assessment**: Trends diverged before treatment - parallel trends likely violated")
+            st.error("❌ **Assessment**: Trends diverged before treatment. Parallel trends assumption likely is not believable.")
             st.warning("⚠️ **Implication**: This suggests the DiD estimate may be biased due to pre-existing differences in trends between groups.")
         else:
-            st.success("✅ **Assessment**: No evidence of pre-treatment divergence - parallel trends assumption appears reasonable.")
+            st.success("✅ **Assessment**: Not enough evidence to claim there are different trends pre-treatment. Parallel trends assumption appears reasonable.")
             st.info("💡 **Implication**: This makes the assumptions of the DiD design more reasonable, but does not completely validate the assumptions.")

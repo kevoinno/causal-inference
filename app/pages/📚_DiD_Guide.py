@@ -30,11 +30,13 @@ st.markdown("1. **Parallel trends**: Without treatment, the treated and control 
 st.markdown("""2. **Stable Unit Treatment Value Assumption (SUTVA)**: There is one well-defined version of the treatment, and 
             the treatment status of one unit does not affect another unit's outcome""")
 st.markdown("3. **No anticipation effects**: The treatment does not affect the outcome of the units before the treatment occurs")
+
+st.markdown("**Important remark:** These assumptions can never truly be proven true, but they are extremely important to allow us to claim our effect is causal. There are many tests to try to falsify or show that these assumptions might not hold. Please check out the simulation tool to see how one of these placebo tests work.")
 st.write("Let's go over a famous example of this to make the intuition clearer.")
 
 # The example
 st.markdown("## John Snow's Cholera Example")
-st.markdown("""In mid-1800s, people were suffering from cholera in London, but no one knew what caused cholera. John Snow hypothesized
+st.markdown("""In the mid-1800s, people were suffering from cholera in London, but no one knew what caused cholera. John Snow hypothesized
             that cholera spreads from the water, so he used a DiD design to test this hypothesis. At the time, two water companies
             serviced London: The Southwark and Vauxhall Company and the Lambeth Water Company.""")
 
@@ -117,6 +119,49 @@ fig.add_trace(go.Scatter(
     marker=dict(size=8, color='red', symbol='diamond')
 ))
 
+# Add causal effect line (vertical line from counterfactual to actual)
+# Offset slightly to the right to avoid overlapping with data points
+offset = 0.1  # Small offset to the right
+
+# Main vertical line
+fig.add_trace(go.Scatter(
+    x=[1854 + offset, 1854 + offset],
+    y=[lambeth_counterfactual, 193],
+    mode='lines',
+    name='Causal Effect',
+    line=dict(color='black', width=3),
+    showlegend=False
+))
+
+# Top horizontal cap
+fig.add_trace(go.Scatter(
+    x=[1854 + offset - 0.05, 1854 + offset + 0.05],
+    y=[lambeth_counterfactual, lambeth_counterfactual],
+    mode='lines',
+    line=dict(color='black', width=3),
+    showlegend=False
+))
+
+# Bottom horizontal cap
+fig.add_trace(go.Scatter(
+    x=[1854 + offset - 0.05, 1854 + offset + 0.05],
+    y=[193, 193],
+    mode='lines',
+    line=dict(color='black', width=3),
+    showlegend=False
+))
+
+# Add text annotation for causal effect
+fig.add_annotation(
+    x=1854 + offset + 0.2,  # Position text to the right of the bar
+    y=(lambeth_counterfactual + 193) / 2,  # Position at middle of the bar
+    text="Causal Effect",
+    showarrow=False,
+    font=dict(size=12, color='black'),
+    xanchor='left',
+    yanchor='middle'
+)
+
 # Update layout
 fig.update_layout(
     title='Cholera Death Rates: Lambeth vs Southwark & Vauxhall',
@@ -132,23 +177,27 @@ fig.add_vline(x=1852, line_dash="dash", line_color="gray")
 st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("""
-So how do we actually measure the effect of the changing of water sources for the Lambeth Company? The best way to think about answering this problem
-is assuming we had all the information possible. If we did, then we could take the difference between Lambeth's cholera death rate in 
-1854 after moving water sources and Lambeth's cholera death rate in 1854 had they never switched water sources. However, the reality
-is that Lambeth truly switched water sources, so we can never know what the death rate would have been in 1854 had they never switched. 
-But, with the DiD design, we can make some assumptions to estimate it.
+To estimate the causal effect of switching water sources on the cholera death rate for households that used Lambeth, the DiD design tries to estimate 
+what the cholera death rate for Lambeth households would be in 1854 **had Lambeth never switched water sources**. In practice, we will never know this exact value, but
+the DiD design assumes that the death rate for Lambeth households would have trended similarly to the death rate for Southwark households, allowing us to estimate what
+the Lambeth cholera death rates would have been in 1854 had they never switched water sources. This is known as the **parallel trends** assumption. In the graph above,
+we see the parallel trends assumption as the dotted red line (Lambeth's cholera death rate had they never switched) and the blue line (Southwark's cholera death rate) are parallel.
             
-Let's examine each identification assumption in the context of this study:
+Let's examine see if making these identification assumptions (specifically parallel trends) are feasible:
 
-**1. Parallel Trends Assumption**: Parallel trends likely holds because both water companies served similar areas of London (neighboring households). This means that any outside factors that affect cholera death rate such as the quality of healthcare would be similar between the treated and untreated groups.
+**1. Parallel Trends Assumption**: Parallel trends likely holds because both water companies served similar areas of London (neighboring households). This means that any outside factors that affect cholera death rate such as the quality of healthcare would affect both groups similarly.
 
 **2. SUTVA (Stable Unit Treatment Value Assumption)**: The validity of SUTVA can be debated. People can argue that there are spillover effects between households. If Southwark customers contracted cholera from contaminated water, they could spread the disease to their Lambeth-using neighbors through human contact, even though the water companies served different households. However, we believe this violation is likely minor because cholera is primarily waterborne rather than person-to-person transmitted, and mobility was limited in 1850s London, reducing the scope of potential spillover effects.
 
 **3. No Anticipation Effects**: In this example, we believe the no anticipation assumption likely holds because the water source changes were not publicly announced in advance, and there was limited public awareness of the connection between water quality and cholera transmission. People in 1850s London did not understand that cholera was waterborne, so they would not have changed their behavior in anticipation of the water source change. The treatment appears to have been implemented without public knowledge, making anticipation effects unlikely.
             
-With this assumption, we can estimate the cholera death rate for Lambeth in 1854 to be Lambeth's death rate in 1849 + the trend of 
-Southwark & Vauxhall from 1849 to 1854. Then we have everything we need to estimate the effect! The steps are below. For some 
-clarification on notation, we'll use $E[Y_d(t)|D]$ where $d$ indicates the potential treatment status (0 for control, 1 for treated), $t$ indicates the time period (0 for pre-treatment, 1 for post-treatment), and $D$ indicates the observed treatment assignment.
+Using these assumptions, we have: 
+    
+1. Lambeth's observed cholera death rate was in 1854
+
+2. An estimate of Lambeth's cholera death rate in 1854 if they never switched sources
+
+So taking the difference between **(2)** and **(1)**, we can estimate the causal effect. The graph above provides a nice visual of how the DiD design works. For clarification on notation, we'll use $E[Y_d(t)|D]$ where $d$ indicates the potential treatment status (0 for control, 1 for treated), $t$ indicates the time period (0 for pre-treatment, 1 for post-treatment), and $D$ indicates the observed treatment assignment.
 """)
 
 st.markdown("**Step 1:** The cholera death rate for Lambeth in 1854 after switching water sources (which we observed in the data):")
@@ -178,7 +227,7 @@ st.latex(r'''
 ''')
 
 st.markdown("""
-So to get the effect of changing water supplies on the death rate for Lambeth, we get a causal effect of -771. This means that 
+So taking the difference between **(2)** and **(1)**, we get a causal effect of -771. This means that 
 Lambeth switching water sources decreased the death rate for households that used Lambeth's water by 771 per 100,000 people.
 """)
 
@@ -228,7 +277,7 @@ The more formal math below shows how we are able to identify the average effect 
 """)
 
 st.markdown("""
-Our goal is to estimate the ATT:
+Our goal is to estimate the Average Treatment Effect on the Treated Group (ATT):
             """)
 
 st.latex(r'''
