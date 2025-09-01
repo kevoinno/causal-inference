@@ -34,87 +34,78 @@ st.write("""The difference-in-difference design might be a good candidate for yo
 st.markdown("""There are 5 time periods ranging from -3 to 1. If a time period is negative or zero, then it is a pre-treatment period. 
             Time period $t = 0$ marks the pre-treatment period used in the 2x2 DiD setup and $t = 1$ marks the post-treatment period.""")
 
-# Simulation parameters and visualizations side by side
-col1, col2 = st.columns([0.3, 0.7])
+# Create 4 tabs as requested (combined simulation and visualization, plus data preview)
+simulation_viz_tab, results_tab, parallel_trends_tab, data_preview_tab = st.tabs([
+    "⚙️ Simulation Parameters & 📊 Visualizations", 
+    "📋 Regression Results & Interpretation",
+    "🔍 Parallel Trends Testing",
+    "📊 Data Preview"
+])
 
-# Left column: Simulation parameters
-with col1:
-    with st.container(border=True):
-        st.header("⚙️ Simulation Parameters")
-        st.caption("Play around with the sliders and see how the graphs and estimates change")
-        st.caption("e.g. Try making the group trends different and check the estimate!")
-
-        true_effect = st.slider("True Effect", min_value=-50, max_value=50, value=8, 
-                                help="Size of the causal effect of the treatment")
+# Combined Tab: Simulation Parameters & Visualizations
+with simulation_viz_tab:
+    st.caption("Play around with the sliders and see how the graphs and estimates change")
+    st.caption("e.g. Try making the group trends different and check the estimate!")
+    
+    # Create two main columns: parameters (left) and visualizations (right)
+    param_col, viz_col = st.columns([0.4, 0.6])
+    
+    # Left column: Simulation parameters
+    with param_col:
+        st.subheader("⚙️ Parameters")
         
-        col1_inner_sim, col2_inner_sim = st.columns(2)
-        with col1_inner_sim:
+        # Create two columns for better parameter organization
+        col1_params, col2_params = st.columns(2)
+        
+        with col1_params:
+            true_effect = st.slider("True Effect", min_value=-50, max_value=50, value=8, 
+                                    help="Size of the causal effect of the treatment")
+            
             treated_baseline = st.slider("Treated Baseline", min_value=0, max_value=50, value=10, 
-                                         help="Baseline outcome of the treated group at time t = 0")
+                                        help="Baseline outcome of the treated group at time t = 0")
             treated_trend = st.slider("Treated Trend", min_value=0, max_value=10, value=4,
                                         help="The trend that the outcome of the treated group follows over time")
             noise = st.slider("Noise", min_value=0, max_value=20, value=3,
-                              help="How much the variation in outcome can be")
-        with col2_inner_sim:
+                            help="How much the variation in outcome can be")
+        
+        with col2_params:
             control_baseline = st.slider("Control Baseline", min_value=0, max_value=50, value=40, 
-                                         help="Baseline outcome of the control group at time t = 0")
+                                        help="Baseline outcome of the control group at time t = 0")
             control_trend = st.slider("Control Trend", min_value=0, max_value=10, value=4,
-                                      help="The trend that the outcome of the control group follows over time")
+                                    help="The trend that the outcome of the control group follows over time")
             sample_size = st.slider("Sample Size", min_value=10, max_value=2000, value=200, step=10,
                                     help="The total number of units in the study")
-        
-        # New parameter for realistic treatment assignment
-        treat_ratio = st.slider("Treatment Group Size (%)", min_value=10, max_value=90, value=30, step=5,
-                                help="Percentage of units in the treatment group (realistic DiD often has uneven groups)")
+            
+            # New parameter for realistic treatment assignment
+            treat_ratio = st.slider("Treatment Group Size (%)", min_value=10, max_value=90, value=30, step=5,
+                                    help="Percentage of units in the treatment group (realistic DiD often has uneven groups)")
 
-# Simulate data
-df = simulate(b0_treat=treated_baseline, b0_control=control_baseline,
-             b1_treat=treated_trend, b1_control=control_trend,
-             treatment_effect=true_effect,
-             noise=noise,
-             N=sample_size,
-             treat_ratio=treat_ratio/100)  # Convert percentage to decimal
-
-# Data preview section
-with st.container(border=True):
-    st.header("📊 Data Preview")
-    st.caption("See what your simulated data looks like in tabular form")
+    # Simulate data (needed for visualizations)
+    df = simulate(b0_treat=treated_baseline, b0_control=control_baseline,
+                b1_treat=treated_trend, b1_control=control_trend,
+                treatment_effect=true_effect,
+                noise=noise,
+                N=sample_size,
+                treat_ratio=treat_ratio/100)  # Convert percentage to decimal
     
-    # Show group sizes for educational purposes
-    n_treated = int(sample_size * treat_ratio / 100)
-    n_control = sample_size - n_treated
-    st.markdown(f"📈 **Group Sizes**: {n_treated} treated units ({treat_ratio}%) | {n_control} control units ({100-treat_ratio}%)")
-
-    df_display = df[['unit', 'treat', 'time_period', 'outcome']]    
-    st.dataframe(df_display.head(5))
-    df_csv = df_display.to_csv()
-    st.download_button("Download Data", data=df_csv, file_name="simulated_did_data.csv", type="primary")
-
-# Right column: Visualizations
-with col2:
-    with st.container(border=True):
-        st.header("📈 Visualizations")
-        st.caption("Visualize your simulated data")
+    # Right column: Visualizations
+    with viz_col:
+        st.subheader("📊 Visualizations")
         
         # Use DiD to model the data and get parameters
         model_results = estimate_did(df)
         
-        col1_inner_viz, col2_inner_viz = st.columns(2) 
+        # Display the mean outcomes plot
+        fig_mean = mean_outcomes_plot(df)
+        st.plotly_chart(fig_mean, use_container_width=True)
+        st.caption("💡 **Note**: This shows group means over time. The raw data would vary around these points due to individual variation and noise.")
         
-        with col1_inner_viz:
-            # Display the mean outcomes plot (replaces raw data plot)
-            fig_mean = mean_outcomes_plot(df)
-            st.plotly_chart(fig_mean, use_container_width=True)
-            st.caption("💡 **Note**: This shows group means over time. The raw data would vary around these points due to individual variation and noise.")
-        
-        with col2_inner_viz:
-            # Display the means plot
-            fig_means = means_plot(model_results)
-            st.plotly_chart(fig_means, use_container_width=True)
+        # Display the means plot
+        fig_means = means_plot(model_results)
+        st.plotly_chart(fig_means, use_container_width=True)
 
-# Results and Interpretation section
-with st.container(border=True):
-    st.header("📋 Results & Interpretation")
+# Tab 3: Regression Results and Interpretation
+with results_tab:
     st.caption("Regression results and what they mean")
     
     # Get bias visualization and statistics
@@ -165,13 +156,12 @@ with st.container(border=True):
     st.caption("Tells us how far the model's estimated causal effect was from the true effect")
     st.plotly_chart(bias_fig, use_container_width=True)
 
-# Placebo test
-with st.container(border=True):
-    st.header("Testing Parallel Trends Assumptions")
-    st.caption("Pre-treatment falsification test")
+# Tab 4: Testing Parallel Trends Assumptions
+with parallel_trends_tab:
+    st.caption("DiD relies on the critical assumption of parallel trends. We need to check if this assumption is reasonable using a pre-treatment placebos test.")
     
     st.write("""
-    This is a falsification test for the parallel trends. We run a 2x2 DiD using time periods -1 and 0 (before treatment) to test the parallel trends assumption.
+    This is a falsification test for the parallel trends. We run a 2x2 DiD using time periods -1 and 0 (before treatment) to test the parallel trends assumption. This is called a placebo test because we are pretending a treatment is applied between t = -1 and t = 0. 
     
     If parallel trends hold, the interaction term (`treat:time_indicator`) should be close to zero and statistically insignificant. If the interaction term is non-zero and statistically significant, then we have evidence that the trends between the two groups were different and not parallel.
              
@@ -212,3 +202,18 @@ with st.container(border=True):
         else:
             st.success("✅ **Assessment**: Not enough evidence to claim there are different trends pre-treatment. Parallel trends assumption appears reasonable.")
             st.info("💡 **Implication**: This makes the assumptions of the DiD design more reasonable, but does not completely validate the assumptions.")
+
+# Tab 4: Data Preview
+with data_preview_tab:
+    st.header("📊 Data Preview")
+    st.caption("See what your simulated data looks like in tabular form")
+    
+    # Show group sizes for educational purposes
+    n_treated = int(sample_size * treat_ratio / 100)
+    n_control = sample_size - n_treated
+    st.markdown(f"📈 **Group Sizes**: {n_treated} treated units ({treat_ratio}%) | {n_control} control units ({100-treat_ratio}%)")
+
+    df_display = df[['unit', 'treat', 'time_period', 'outcome']]    
+    st.dataframe(df_display.head(5))
+    df_csv = df_display.to_csv()
+    st.download_button("Download Data", data=df_csv, file_name="simulated_did_data.csv", type="primary")
