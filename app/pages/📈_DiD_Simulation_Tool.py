@@ -69,12 +69,13 @@ with simulation_viz_tab:
                             help="How much the variation in outcome can be")
         
         with col2_params:
+            sample_size = st.slider("Sample Size", min_value=10, max_value=2000, value=200, step=10,
+                                    help="The total number of units in the study")
             control_baseline = st.slider("Control Baseline", min_value=0, max_value=50, value=40, 
                                         help="Baseline outcome of the control group at time t = 0")
             control_trend = st.slider("Control Trend", min_value=0, max_value=10, value=4,
                                     help="The trend that the outcome of the control group follows over time")
-            sample_size = st.slider("Sample Size", min_value=10, max_value=2000, value=200, step=10,
-                                    help="The total number of units in the study")
+            
             
             # New parameter for realistic treatment assignment
             treat_ratio = st.slider("Treatment Group Size (%)", min_value=10, max_value=90, value=30, step=5,
@@ -88,21 +89,35 @@ with simulation_viz_tab:
                 N=sample_size,
                 treat_ratio=treat_ratio/100)  # Convert percentage to decimal
     
+    # Get regression results for significance check
+    model_results = estimate_did(df)
+    p_value = model_results.pvalues['treat:time_indicator']
+    is_significant = p_value < 0.05
+    
     # Right column: Visualizations
     with viz_col:
         st.subheader("📊 Visualizations")
         
-        # Use DiD to model the data and get parameters
-        model_results = estimate_did(df)
-        
         # Display the mean outcomes plot
         fig_mean = mean_outcomes_plot(df)
-        st.plotly_chart(fig_mean, use_container_width=True)
+        st.plotly_chart(fig_mean, use_container_width=True, key="mean_outcomes_plot")
         st.caption("💡 **Note**: This shows group means over time. The raw data would vary around these points due to individual variation and noise.")
         
         # Display the means plot
         fig_means = means_plot(model_results)
-        st.plotly_chart(fig_means, use_container_width=True)
+        st.plotly_chart(fig_means, use_container_width=True, key="means_plot")
+        
+        # Add bias visualization at the bottom
+        st.subheader("📈 Bias Visualization")
+        st.caption("Shows how far the model's estimated causal effect was from the true effect")
+        bias_fig, bias, estimated_effect, ci_lower, ci_upper = bias_visualization(model_results, true_effect)
+        st.plotly_chart(bias_fig, use_container_width=True, key="bias_visualization")
+        
+        # Show statistical significance feedback below bias visualization
+        if is_significant:
+            st.success("✅ **Statistically Significant Effect Detected** (p = {:.3f}): The estimated effect is statistically significantly different from 0. This does NOT mean there is a true effect. If parallel trends is violated, we can still find a significant effect when there is no true effect (false positive).".format(p_value))
+        else:
+            st.warning("❌ **No Statistically Significant Effect** (p = {:.3f}): We don't have enough evidence to say that the estimated effect is significantly different from 0".format(p_value))
 
 # Tab 3: Regression Results and Interpretation
 with results_tab:
@@ -143,7 +158,7 @@ with results_tab:
         """)
         
         if is_significant:
-            st.success("✅ **P-value Interpretation**: The estimated effect is statistically significantly different from 0")
+            st.success("✅ **P-value Interpretation**: The estimated effect is statistically significantly different from 0. This does NOT mean there is a true effect. If parallel trends is violated, we can still find a signficant effect when there is no true effect (false postiive).")
         else:
             st.warning("❌ **P-value Interpretation**: We don't have enough evidence to say that the estimated effect is significantly different from 0")
         
@@ -154,7 +169,7 @@ with results_tab:
     # Bias visualization below both columns
     st.subheader("📈 Bias Visualization")
     st.caption("Tells us how far the model's estimated causal effect was from the true effect")
-    st.plotly_chart(bias_fig, use_container_width=True)
+    st.plotly_chart(bias_fig, use_container_width=True, key="results_bias_visualization")
 
 # Tab 4: Testing Parallel Trends Assumptions
 with parallel_trends_tab:
