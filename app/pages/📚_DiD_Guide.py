@@ -3,12 +3,18 @@ import plotly.graph_objects as go
 import plotly.express as px
 import numpy as np
 import pandas as pd
+import sys
+import os
+
+# Add the parent directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from app.utils.style import setup_page
 
 # Set page config
-st.set_page_config(
-    page_title="DiD Guide",
-    page_icon="📚",
-    layout="wide"
+setup_page(
+    title="DiD Guide",
+    icon="📚"
 )
 
 # Back button

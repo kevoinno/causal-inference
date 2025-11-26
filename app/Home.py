@@ -1,15 +1,15 @@
 import streamlit as st
+from utils.style import setup_page
 
 # Set page config for the main page
-st.set_page_config(
-    page_title="Causal Buddy",
-    page_icon="🔬",
-    layout="wide"
+setup_page(
+    title="Causal Buddy",
+    icon="🔬"
 )
 
 # Main homepage content
 st.markdown("<h1 style='text-align:center;'>Causal Buddy</h1>", unsafe_allow_html=True)
-st.markdown("<div style='text-align:center;'color = #666666;'>Tools that make learning causal inference easy</div>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align:center; color: #666666;'>Tools that make learning causal inference easy</h4>", unsafe_allow_html=True)
 
 st.write("")
 st.write("")

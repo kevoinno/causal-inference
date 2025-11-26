@@ -10,12 +10,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from simulate.simulate import simulate
 from estimate.estimate import estimate_did, placebo_test
 from visualize.visualize import mean_outcomes_plot, means_plot, bias_visualization
+from app.utils.style import setup_page
 
 # Set page config for this specific page
-st.set_page_config(
-    page_title="DiD Simulation Tool",
-    page_icon="📈",
-    layout="wide"
+setup_page(
+    title="DiD Simulation Tool",
+    icon="📈"
 )
 
 # Back button with primary styling
