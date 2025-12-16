@@ -28,7 +28,6 @@ if st.button("← Back to Home", type="primary"):
     st.switch_page("Home.py")
 
 st.title("Difference-in-Difference Simulation Tool 📈")
-st.sidebar.header("DiD Simulation Tool")
 
 # Introduction
 st.write("""Have you ever wanted to measure the impact of a policy or marketing campaign, but for some reason you couldn't run a 
