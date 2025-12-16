@@ -7,9 +7,14 @@ import os
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from simulate.simulate import simulate
-from estimate.estimate import estimate_did, placebo_test
-from visualize.visualize import mean_outcomes_plot, means_plot, bias_visualization
+from methods.diff_in_diff import (
+    simulate,
+    estimate_did,
+    placebo_test,
+    mean_outcomes_plot,
+    means_plot,
+    bias_visualization
+)
 from app.utils.style import setup_page
 
 # Set page config for this specific page
