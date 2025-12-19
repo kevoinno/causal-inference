@@ -30,8 +30,8 @@ with col1:
         value=None,
         placeholder="e.g., 0.05",
         min_value=0.0,
-        max_value=1.0,
         step=0.01,
+        max_value=1.0,
         help="The chance your test finds a significant effect when there is not one (e.g. 0.05 = 5% chance of false positive).",
     )
     power = st.number_input(
@@ -41,7 +41,7 @@ with col1:
         min_value=0.0,
         max_value=1.0,
         step=0.01,
-        help="The chance your test finds a signficant effect when there is one (e.g. 0.8 = 80% chance of correctly detecting a signifcant effect)",
+        help="The chance your test finds a significant effect when there is one (e.g. 0.8 = 80% chance of correctly detecting a signifcant effect)",
     )
 
 with col2:
@@ -51,7 +51,7 @@ with col2:
         placeholder="e.g., 0.1",
         min_value=0.001,
         step=0.01,
-        help="The smallest effect size your test can reliably detect (e.g., 0.1 means a 10% improvement in your metric).",
+        help="The smallest absolute effect size your test can reliably detect (e.g., 0.1 means a 10% improvement in your metric).",
     )
     variance = st.number_input(
         "Variance of the target metric",
