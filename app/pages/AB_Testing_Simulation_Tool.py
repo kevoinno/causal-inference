@@ -1,6 +1,4 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
 import sys
 import os
 
@@ -9,9 +7,7 @@ sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 )
 
-# import A/B testing functions
 from methods.ab_testing import calculate_sample_size
-
 
 st.title("A/B Testing")
 
@@ -43,7 +39,6 @@ with col1:
         step=0.01,
         help="The chance your test finds a significant effect when there is one (e.g. 0.8 = 80% chance of correctly detecting a signifcant effect)",
     )
-
 
 with col2:
     delta = st.number_input(
@@ -101,7 +96,9 @@ if st.button("Calculate sample size", type="primary"):
                     st.metric(
                         "Total Sample Size",
                         f"{result['n_total']}",
-                        help=f"Control + Treated = {result['n_control']} + {result['n_treated']} = {result['n_control'] + result['n_treated']}",
+                        help=f"Control + Treated = {result['n_control']} + {
+                            result['n_treated']
+                        } = {result['n_control'] + result['n_treated']}",
                     )
         except Exception as e:
             st.error(f"Calculation error: {str(e)}")
