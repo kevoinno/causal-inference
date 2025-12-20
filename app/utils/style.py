@@ -1,18 +1,15 @@
 import streamlit as st
 
+
 def setup_page(title: str, icon: str):
     """
     Sets up the page configuration and injects custom CSS for fonts and styling.
-    
+
     Args:
         title (str): The page title to display in the browser tab.
         icon (str): The favicon (emoji) to display in the browser tab.
     """
-    st.set_page_config(
-        page_title=title,
-        page_icon=icon,
-        layout="wide"
-    )
+    st.set_page_config(page_title=title, page_icon=icon, layout="wide")
 
     # Inject Inter font from Google Fonts and apply to all elements
     st.markdown(
@@ -32,5 +29,5 @@ def setup_page(title: str, icon: str):
         }
         </style>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
