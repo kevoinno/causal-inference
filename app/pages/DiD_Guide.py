@@ -1,21 +1,17 @@
 import streamlit as st
 import plotly.graph_objects as go
-import plotly.express as px
-import numpy as np
 import pandas as pd
 import sys
 import os
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
 from app.utils.style import setup_page
 
-# Set page config
-setup_page(
-    title="DiD Guide",
-    icon="📚"
+# Add the parent directory to the Python path
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 )
+
+# Set page config
+setup_page(title="DiD Guide", icon="📚")
 
 # Back button
 if st.button("← Back to Home", type="primary"):
@@ -31,13 +27,21 @@ st.markdown("""So you want to find the causal effect of some policy or marketing
         then you can identify the impact of the policy using DiD.""")
 
 st.markdown("## Identification Assumptions")
-st.markdown("Here are the following assumptions that we must defend in order to use the DiD design. They are called **identification assumptions** because they let us identify a causal quantity of interest.")
-st.markdown("1. **Parallel trends**: Without treatment, the treated and control groups would follow similar trends in outcome")
+st.markdown(
+    "Here are the following assumptions that we must defend in order to use the DiD design. They are called **identification assumptions** because they let us identify a causal quantity of interest."
+)
+st.markdown(
+    "1. **Parallel trends**: Without treatment, the treated and control groups would follow similar trends in outcome"
+)
 st.markdown("""2. **Stable Unit Treatment Value Assumption (SUTVA)**: There is one well-defined version of the treatment, and 
             the treatment status of one unit does not affect another unit's outcome""")
-st.markdown("3. **No anticipation effects**: The treatment does not affect the outcome of the units before the treatment occurs")
+st.markdown(
+    "3. **No anticipation effects**: The treatment does not affect the outcome of the units before the treatment occurs"
+)
 
-st.markdown("**Important remark:** These assumptions can never truly be proven true, but they are extremely important to allow us to claim our effect is causal. There are many tests to try to falsify or show that these assumptions might not hold. Please check out the simulation tool to see how one of these placebo tests work.")
+st.markdown(
+    "**Important remark:** These assumptions can never truly be proven true, but they are extremely important to allow us to claim our effect is causal. There are many tests to try to falsify or show that these assumptions might not hold. Please check out the simulation tool to see how one of these placebo tests work."
+)
 st.write("Let's go over a famous example of this to make the intuition clearer.")
 
 # The example
@@ -60,22 +64,15 @@ st.markdown("""### The Data""")
 
 # Create the cholera data table
 cholera_data = {
-    'Water supply': [
-        'Southwark & Vauxhall Company only',
-        'Lambeth Company Only'
-    ],
-    'Cholera death rate per 100,000 (1849)': [1349, 847],
-    'Cholera death rate per 100,000 (1854)': [1466, 193],
+    "Water supply": ["Southwark & Vauxhall Company only", "Lambeth Company Only"],
+    "Cholera death rate per 100,000 (1849)": [1349, 847],
+    "Cholera death rate per 100,000 (1854)": [1466, 193],
 }
 
 df_cholera = pd.DataFrame(cholera_data)
 
 # Display the table with custom styling
-st.dataframe(
-    df_cholera,
-    use_container_width=True,
-    hide_index=True
-)
+st.dataframe(df_cholera, use_container_width=True, hide_index=True)
 
 st.markdown("""Snow had collected this data on cholera death rates per 100,000 people for households that 
             used Southwark & Vauxhall Company as their water supply and also for households that used Lambeth Company as their
@@ -96,66 +93,78 @@ lambeth_counterfactual = 847 + vauxhall_change  # 847 + 117 = 964
 fig = go.Figure()
 
 # Add Vauxhall line (blue)
-fig.add_trace(go.Scatter(
-    x=years,
-    y=vauxhall_rates,
-    mode='lines+markers',
-    name='Southwark & Vauxhall',
-    line=dict(color='blue', width=3),
-    marker=dict(size=10, color='blue')
-))
+fig.add_trace(
+    go.Scatter(
+        x=years,
+        y=vauxhall_rates,
+        mode="lines+markers",
+        name="Southwark & Vauxhall",
+        line=dict(color="blue", width=3),
+        marker=dict(size=10, color="blue"),
+    )
+)
 
 # Add Lambeth line (red)
-fig.add_trace(go.Scatter(
-    x=years,
-    y=lambeth_rates,
-    mode='lines+markers',
-    name='Lambeth (Actual)',
-    line=dict(color='red', width=3),
-    marker=dict(size=10, color='red')
-))
+fig.add_trace(
+    go.Scatter(
+        x=years,
+        y=lambeth_rates,
+        mode="lines+markers",
+        name="Lambeth (Actual)",
+        line=dict(color="red", width=3),
+        marker=dict(size=10, color="red"),
+    )
+)
 
 # Add Lambeth counterfactual (dotted red)
-fig.add_trace(go.Scatter(
-    x=[1849, 1854],
-    y=[847, lambeth_counterfactual],
-    mode='lines+markers',
-    name='Lambeth (If they never switched water sources)',
-    line=dict(color='red', width=2, dash='dot'),
-    marker=dict(size=8, color='red', symbol='diamond')
-))
+fig.add_trace(
+    go.Scatter(
+        x=[1849, 1854],
+        y=[847, lambeth_counterfactual],
+        mode="lines+markers",
+        name="Lambeth (If they never switched water sources)",
+        line=dict(color="red", width=2, dash="dot"),
+        marker=dict(size=8, color="red", symbol="diamond"),
+    )
+)
 
 # Add causal effect line (vertical line from counterfactual to actual)
 # Offset slightly to the right to avoid overlapping with data points
 offset = 0.1  # Small offset to the right
 
 # Main vertical line
-fig.add_trace(go.Scatter(
-    x=[1854 + offset, 1854 + offset],
-    y=[lambeth_counterfactual, 193],
-    mode='lines',
-    name='Causal Effect',
-    line=dict(color='black', width=3),
-    showlegend=False
-))
+fig.add_trace(
+    go.Scatter(
+        x=[1854 + offset, 1854 + offset],
+        y=[lambeth_counterfactual, 193],
+        mode="lines",
+        name="Causal Effect",
+        line=dict(color="black", width=3),
+        showlegend=False,
+    )
+)
 
 # Top horizontal cap
-fig.add_trace(go.Scatter(
-    x=[1854 + offset - 0.05, 1854 + offset + 0.05],
-    y=[lambeth_counterfactual, lambeth_counterfactual],
-    mode='lines',
-    line=dict(color='black', width=3),
-    showlegend=False
-))
+fig.add_trace(
+    go.Scatter(
+        x=[1854 + offset - 0.05, 1854 + offset + 0.05],
+        y=[lambeth_counterfactual, lambeth_counterfactual],
+        mode="lines",
+        line=dict(color="black", width=3),
+        showlegend=False,
+    )
+)
 
 # Bottom horizontal cap
-fig.add_trace(go.Scatter(
-    x=[1854 + offset - 0.05, 1854 + offset + 0.05],
-    y=[193, 193],
-    mode='lines',
-    line=dict(color='black', width=3),
-    showlegend=False
-))
+fig.add_trace(
+    go.Scatter(
+        x=[1854 + offset - 0.05, 1854 + offset + 0.05],
+        y=[193, 193],
+        mode="lines",
+        line=dict(color="black", width=3),
+        showlegend=False,
+    )
+)
 
 # Add text annotation for causal effect
 fig.add_annotation(
@@ -163,17 +172,17 @@ fig.add_annotation(
     y=(lambeth_counterfactual + 193) / 2,  # Position at middle of the bar
     text="Causal Effect",
     showarrow=False,
-    font=dict(size=12, color='black'),
-    xanchor='left',
-    yanchor='middle'
+    font=dict(size=12, color="black"),
+    xanchor="left",
+    yanchor="middle",
 )
 
 # Update layout
 fig.update_layout(
-    title='Cholera Death Rates: Lambeth vs Southwark & Vauxhall',
-    xaxis_title='Year',
-    yaxis_title='Cholera Death Rate per 100,000',
-    height=500
+    title="Cholera Death Rates: Lambeth vs Southwark & Vauxhall",
+    xaxis_title="Year",
+    yaxis_title="Cholera Death Rate per 100,000",
+    height=500,
 )
 
 # Add vertical line for treatment (1852)
@@ -206,31 +215,37 @@ Using these assumptions, we have:
 So taking the difference between **(2)** and **(1)**, we can estimate the causal effect. The graph above provides a nice visual of how the DiD design works. For clarification on notation, we'll use $E[Y_d(t)|D]$ where $d$ indicates the potential treatment status (0 for control, 1 for treated), $t$ indicates the time period (0 for pre-treatment, 1 for post-treatment), and $D$ indicates the observed treatment assignment.
 """)
 
-st.markdown("**Step 1:** The cholera death rate for Lambeth in 1854 after switching water sources (which we observed in the data):")
+st.markdown(
+    "**Step 1:** The cholera death rate for Lambeth in 1854 after switching water sources (which we observed in the data):"
+)
 
-st.latex(r'''
+st.latex(r"""
 E[Y_1(1)|D=1] = 193
-''')
+""")
 
-st.markdown("**Step 2:** The cholera death rate for Lambeth in 1854 had they never switched water sources (which we estimated):")
+st.markdown(
+    "**Step 2:** The cholera death rate for Lambeth in 1854 had they never switched water sources (which we estimated):"
+)
 
-st.latex(r'''
+st.latex(r"""
 \begin{align*}
 E[Y_0(1)|D=1] &= E[Y_1(0)|D=1] + (E[Y_0(1)|D=0] - E[Y_0(0)|D=0]) \\
 &= 847 + (1466 - 1349) \\
 &= 964
 \end{align*}
-''')
+""")
 
-st.markdown("**Step 3:** The causal effect of switching water sources on death rates for Lambeth:")
+st.markdown(
+    "**Step 3:** The causal effect of switching water sources on death rates for Lambeth:"
+)
 
-st.latex(r'''
+st.latex(r"""
 \begin{align*}
 \tau &= E[Y_1(1)|D=1] - E[Y_0(1)|D=1] \\
 &= 193 - 964 \\
 &= -771
 \end{align*}
-''')
+""")
 
 st.markdown("""
 So taking the difference between **(2)** and **(1)**, we get a causal effect of -771. This means that 
@@ -238,37 +253,39 @@ Lambeth switching water sources decreased the death rate for households that use
 """)
 
 st.markdown("**Alternative calculation using two differences:**")
-st.markdown("So why is the method called difference-in-difference? Because we could have gotten the same result by taking two differences:")
+st.markdown(
+    "So why is the method called difference-in-difference? Because we could have gotten the same result by taking two differences:"
+)
 
 st.markdown("**Difference 1:** The change in Lambeth's death rates:")
 
-st.latex(r'''
+st.latex(r"""
 \begin{align*}
 \Delta E[Y_1|D=1] &= E[Y_1(1)|D=1] - E[Y_1(0)|D=1] \\
 &= 193 - 847 \\
 &= -654
 \end{align*}
-''')
+""")
 
 st.markdown("**Difference 2:** The change in Vauxhall's death rates:")
 
-st.latex(r'''
+st.latex(r"""
 \begin{align*}
 \Delta E[Y_0|D=0] &= E[Y_0(1)|D=0] - E[Y_0(0)|D=0] \\
 &= 1466 - 1349 \\
 &= 117
 \end{align*}
-''')
+""")
 
 st.markdown("**DiD Estimate:**")
 
-st.latex(r'''
+st.latex(r"""
 \begin{align*}
 \tau &= \Delta E[Y_1|D=1] - \Delta E[Y_0|D=0] \\
 &= -654 - 117 \\
 &= -771
 \end{align*}
-''')
+""")
 
 st.markdown("""
 See how this is the same! I introduced the calculations differently 
@@ -286,9 +303,9 @@ st.markdown("""
 Our goal is to estimate the Average Treatment Effect on the Treated Group (ATT):
             """)
 
-st.latex(r'''
+st.latex(r"""
 ATT = E[Y_1(1)] - E[Y_1(0)]
-''')
+""")
 
 st.markdown("""
 This just is saying that the ATT is the difference between the solid red line 
@@ -297,23 +314,23 @@ This just is saying that the ATT is the difference between the solid red line
 assumption** to try to identify the ATT:
             """)
 
-st.latex(r'''
+st.latex(r"""
 E[Y_0(1) - Y_0(0) | D = 1] = E[Y_0(1) - Y_0(0) | D = 0]
-''')
+""")
 
 st.markdown("""
     This assumption is saying that if the treated group wasn't actually treated, then they would follow the same trend as the untreated group over time. Using 
     this assumption, we identify the ATT using the following proof:
             """)
 
-st.latex(r'''
+st.latex(r"""
 \begin{align}
 ATT &= E[Y_1(1) | D = 1] - E[Y_0(1) | D = 1] \tag{1} & \text{By definition} \\
     &= E[Y_1(1) | D = 1] - E[Y_0(0) | D = 1] - \{E[Y_0(1) | D = 1] - E[Y_0(0) | D = 1]\} \tag{2} & \text{Add and subtract } E[Y_0(0) | D = 1] \\ 
     &= E[Y_1(1) | D = 1] - E[Y_0(0) | D = 1] - \{E[Y_0(1) | D = 0] - E[Y_0(0) | D = 0]\} \tag{3} & \text{Parallel trends} \\
     &= E[Y(1) | D = 1] - E[Y(0) | D = 1] -  \{E[Y(1) | D = 0] - E[Y(0) | D = 0]\} \tag{4} & \text{Consistency}
 \end{align}
-''')
+""")
 
 st.markdown("""
 One tricky part of this proof is in going from line 3 to 4. Here, we assume $E[Y_0(0) | D = 1] = E[Y_1(0) | D = 1]$. This is saying the potential outcomes 
@@ -325,7 +342,6 @@ This final expression shows that the ATT can be identified as the difference bet
 1. The change in outcomes for the treated group from pre- to post-treatment
 2. The change in outcomes for the control group from pre- to post-treatment
 """)
-
 
 
 st.markdown("### Using Linear Regression to Estimate the ATT")
@@ -353,23 +369,19 @@ st.markdown("**Coefficient Interpretation**")
 
 # Create coefficient interpretation table
 coef_data = {
-    'Coefficient': ['β₀', 'β₁', 'β₂', 'β₃'],
-    'Term': ['Intercept', 'Treat', 'Time', 'Treat × Time'],
-    'Interpretation': [
-        'Control group outcome in pre-treatment period',
-        'Difference between treated and control groups in pre-treatment period',
-        'Time trend for control group (pre to post)',
-        'ATT: Causal effect of treatment'
-    ]
+    "Coefficient": ["β₀", "β₁", "β₂", "β₃"],
+    "Term": ["Intercept", "Treat", "Time", "Treat × Time"],
+    "Interpretation": [
+        "Control group outcome in pre-treatment period",
+        "Difference between treated and control groups in pre-treatment period",
+        "Time trend for control group (pre to post)",
+        "ATT: Causal effect of treatment",
+    ],
 }
 
 df_coef = pd.DataFrame(coef_data)
 
-st.dataframe(
-    df_coef,
-    use_container_width=True,
-    hide_index=True
-)
+st.dataframe(df_coef, use_container_width=True, hide_index=True)
 
 st.markdown("**Implementation in Python**")
 
@@ -377,7 +389,8 @@ st.markdown("""
 Here's the exact code used in this app to estimate the DiD regression:
 """)
 
-st.code("""
+st.code(
+    """
 import statsmodels.formula.api as smf
 
 def estimate_did(df):
@@ -389,7 +402,9 @@ def estimate_did(df):
     results = model.fit(cov_type='HC2')
     
     return results
-""", language='python')
+""",
+    language="python",
+)
 
 st.markdown("""
 **Code Explanation:**
@@ -399,6 +414,10 @@ st.markdown("""
 - The coefficient on `treat:time_indicator` is our ATT estimate
 """)
 
-st.markdown("Now that you have a basic understanding for how this design works, play around with the simulation tool to develop your intuition!")
+st.markdown(
+    "Now that you have a basic understanding for how this design works, play around with the simulation tool to develop your intuition!"
+)
 
-st.write("Data and example sourced from: https://pmc.ncbi.nlm.nih.gov/articles/PMC8006863/")
+st.write(
+    "Data and example sourced from: https://pmc.ncbi.nlm.nih.gov/articles/PMC8006863/"
+)
