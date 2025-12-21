@@ -27,7 +27,7 @@ st.caption(
     Standard values for significance level and power are already inputted."""
 )
 
-main_col_left, main_col_right = st.columns([1, 1])
+main_col_left, main_col_right = st.columns([0.6, 0.4])
 
 with main_col_left:
     st.subheader("⚙️ Parameters")
