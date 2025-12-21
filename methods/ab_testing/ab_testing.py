@@ -55,7 +55,7 @@ def calculate_sample_size(
     return res
 
 
-def calculate_test_length(traffic: int, total_sample_size: int) -> None:
+def calculate_test_length(traffic: int, total_sample_size: int) -> int:
     """Calculate the number of days needed to run an A/B test experiment.
 
     This is a simplified estimate assuming constant daily traffic and no user overlap.
@@ -64,7 +64,7 @@ def calculate_test_length(traffic: int, total_sample_size: int) -> None:
     Parameters
     ----------
     traffic : int
-        Daily traffic (number of units, e.g., visitors) the product/website receives.
+        Daily unique traffic (number of units, e.g., visitors) the product/website receives.
     total_sample_size : int
         Total sample size required (sum for both groups, typically 2x per-group size from calculate_sample_size).
 
@@ -79,4 +79,13 @@ def calculate_test_length(traffic: int, total_sample_size: int) -> None:
     - Limitations: Doesn't account for seasonality, user-level effects, or variable traffic.
     - Valid for basic planning but consult experts for complex scenarios.
     """
-    raise NotImplementedError("Function not yet implemented")
+    # Edge cases for sample size and traffic
+    if traffic <= 0:
+        raise Exception("traffic must be > 0")
+    if total_sample_size <= 0:
+        raise Exception("total_sample_size must be > 0")
+
+    # calculate # days to run experiment
+    days = int(np.ceil(total_sample_size / traffic))
+
+    return days
